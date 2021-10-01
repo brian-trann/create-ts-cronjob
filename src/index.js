@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-import inquirer from "inquirer";
-import path from "path";
-
-import { writeFile, readdir, readFile } from "fs/promises";
+const inquirer = require("inquirer");
+const path = require("path");
+const { writeFile, readdir, readFile } = require("fs").promises;
 
 const configFiles = {};
+const configFolderPath = path.resolve(__dirname, "config");
 
 const configFolderPath = path.resolve(__dirname, "config");
 const gitignoreFolderPath = path.resolve(__dirname, "gitignore");
