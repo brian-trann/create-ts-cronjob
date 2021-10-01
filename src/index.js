@@ -10,9 +10,7 @@ const configFolderPath = path.resolve(__dirname, "config");
 const gitignoreFolderPath = path.resolve(__dirname, "gitignore");
 const terraformFolderPath = path.resolve(__dirname, "terraform");
 
-const _terraformFilenames = JSON.parse(
-  '{"Makefile":"Makefile","backend.tf":"backend.tf","env.tfvars.json":"env.tfvars.json","inputs.tf":"inputs.tf","main.tf":"main.tf","providers.tf":"providers.tf","versions.tf":"versions.tf","tsconfig.json":"tsconfig.json","gitignore.txt":".gitignore"}'
-);
+
 (async () => {
   const files = await readdir(configFolderPath).catch(console.log);
 
@@ -26,7 +24,7 @@ const _terraformFilenames = JSON.parse(
       type: "list",
       message: "Pick the Node type",
       name: "technology",
-      choices: Object.keys(configFiles),
+      choices: ["node-default", "node-recommended","node-14", "node-16"],
     },
     {
       type: "confirm",
@@ -75,6 +73,17 @@ const _terraformFilenames = JSON.parse(
     });
     console.log(".gitignore created\n");
   }
+  const _terraformFilenames = {
+    "Makefile": "Makefile",
+    "backend.tf": "backend.tf",
+    "env.tfvars.json": "env.tfvars.json",
+    "inputs.tf": "inputs.tf",
+    "main.tf": "main.tf",
+    "providers.tf": "providers.tf",
+    "versions.tf": "versions.tf",
+    "tsconfig.json": "tsconfig.json",
+    "gitignore.txt": ".gitignore",
+  };
 
   if (makeTerraform) {
     await mkdir("./terraform");
