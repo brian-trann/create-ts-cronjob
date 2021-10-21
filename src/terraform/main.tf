@@ -1,8 +1,8 @@
-resource "kubernetes_cron_job" "project-name" {
+resource "kubernetes_cron_job" "my-project" {
     count = length(var.boards)
 
     metadata{
-        name = "project-name"
+        name = "my-project"
         namespace = var.namespace
     }
 
@@ -20,7 +20,7 @@ resource "kubernetes_cron_job" "project-name" {
                     metadata {}
                     spec {
                         container {
-                            name = "project-name"
+                            name = "my-project"
                             image = var.image
                             env {
                                 name = "BOARD_NAME"
@@ -28,7 +28,7 @@ resource "kubernetes_cron_job" "project-name" {
                             }
                             env_from {
                                 secret_ref {
-                                    name = "project-name-secrets"
+                                    name = "my-project-secrets"
                                 }
                             }
                         }
