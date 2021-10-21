@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+// @ts-check
 const inquirer = require("inquirer");
 const path = require("path");
 const { writeFile, readdir, readFile, mkdir } = require("fs").promises;
@@ -28,14 +28,14 @@ const _terraformFilenames = {
   "gitignore.txt"   : ".gitignore",
 };
 
-
-
 (async () => {
-  const files = await readdir(_folder.tsconfig).catch(console.log);
+  const files = await readdir(_folder.tsconfig).catch(handleExit);
 
-  for (let i of files) {
-    const nodeType = i.split(".")[1];
-    tsConfigFiles[nodeType] = path.join(_folder.tsconfig, i);
+  if (Array.isArray(files)) {
+    files.forEach((file) => {
+      const nodeType = file.split(".")[1];
+      tsConfigFiles[nodeType] = path.join(_folder.tsconfig, file);
+    })
   }
 
   const { lowerProjectName, technology } = await inquirer.prompt([
@@ -62,30 +62,29 @@ const _terraformFilenames = {
   await mkdir(`${projectPath}/src`);
 
   // tsconfig
-  const _tsconfigData = await readFile(tsConfigFiles[technology]).catch(handleExit);
+  const _tsconfigData = await _read(tsConfigFiles[technology])
   const tsconfig = path.join(projectPath, "tsconfig.json");
-  await writeFile(tsconfig, _tsconfigData.toString()).catch(handleExit);
+  await writeFile(tsconfig, _tsconfigData).catch(handleExit);
 
   // gitignore
-  const _gitignoreData = await readFile(path.join(_folder.gitignore, "gitignore.txt")).catch(handleExit);
+  const _gitignoreData = await _read(path.join(_folder.gitignore, "gitignore.txt"))
   const gitignore = path.join(projectPath, ".gitignore");
   await writeFile(gitignore, _gitignoreData).catch(handleExit);
 
   // prettierignore
-  const _prettierIgnore = await readFile(path.join(_folder.prettier, "prettierignore")).catch(handleExit);
+  const _prettierIgnore = await _read(path.join(_folder.prettier, "prettierignore"))
   const prettierIgnore = path.join(projectPath, ".prettierignore");
   await writeFile(prettierIgnore, _prettierIgnore).catch(handleExit);
 
   // prettierrc
-  const _prettierRcData = await readFile(path.join(_folder.prettier, "prettierrc.json")).catch(handleExit);
+  const _prettierRcData = await _read(path.join(_folder.prettier, "prettierrc.json"))
   const prettierRc = path.join(projectPath, ".prettierrc.json");
   await writeFile(prettierRc, _prettierRcData).catch(handleExit);
 
   // readme
-  const _readmeData = await readFile(path.join(_folder.readme, "README.md"));
+  const _readmeData = await _read(path.join(_folder.readme, "README.md"));
   const readme = path.join(projectPath, "README.md");
   await writeFile(readme, replaceInBuffer(_readmeData, projectName)).catch(handleExit);
-  
 
   // terraform
   const terraformPath = `${projectPath}/terraform`;
@@ -93,14 +92,14 @@ const _terraformFilenames = {
   const terraformFiles = await readdir(_folder.terraform).catch(handleExit);
   if (Array.isArray(terraformFiles)) {
     terraformFiles.forEach(async (file) => {
-      const data = await readFile(path.join(_folder.terraform, file));
+      const data = await _read(path.join(_folder.terraform, file));
       const newFilename = path.join(terraformPath, _terraformFilenames[file]);
       await writeFile(newFilename, replaceInBuffer(data, projectName)).catch(handleExit);
     });
   }
 
   // package.json
-  const _packagejsonData = await readFile(path.join(_folder.packagejson, "package.json"));
+  const _packagejsonData = await _read(path.join(_folder.packagejson, "package.json"));
   const packagejson = path.join(projectPath, "package.json");
   await writeFile(packagejson, replaceInBuffer(_packagejsonData, projectName)).catch(handleExit);
 
@@ -110,25 +109,51 @@ const _terraformFilenames = {
   const vscodeFiles = await readdir(_folder.vscode).catch(handleExit);
   if (Array.isArray(vscodeFiles)) {
     vscodeFiles.forEach(async (file) => {
-      const data = await readFile(path.join(_folder.vscode, file));
+      const data = await _read(path.join(_folder.vscode, file));
       const newFileName = path.join(vscodePath, file);
       await writeFile(newFileName, replaceInBuffer(data, projectName)).catch(handleExit);
     });
   }
+
+  console.log("\nSuccess! - Files created!\n");
+  console.log(`cd ${projectName}\n`);
+
 })();
 
-function handleExit(error) {
+/**
+ *
+ * @param {Error|string} error
+ */
+function handleExit(error = "Error. Exiting.") {
   console.log(error);
   process.exit(1);
 }
+
 /**
- * 
- * @param {Buffer} data 
- * @param {string} filename 
+ *
+ * @param {Buffer} data
+ * @param {string} filename
  * @returns {Buffer}
  */
-function replaceInBuffer(data, filename){
-  const stringData = data.toString()
-  const modifiedData = stringData.replace(/my-project/g, filename)
-  return Buffer.from(modifiedData, "utf8")
+function replaceInBuffer(data, filename) {
+  if (filename === "my-project") {
+    return data;
+  }
+  const stringData = data.toString();
+  const modifiedData = stringData.replace(/my-project/g, filename);
+  return Buffer.from(modifiedData, "utf8");
+}
+
+/**
+ *
+ * @param {string} path
+ * @returns {Promise<Buffer>}
+ */
+async function _read(path) {
+  const buff = await readFile(path).catch(handleExit);
+  if (Buffer.isBuffer(buff)) {
+    return buff;
+  } else {
+    handleExit(`Error. Could not read ${path}`);
+  }
 }
