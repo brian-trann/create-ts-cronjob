@@ -1,0 +1,11 @@
+.gitlab
+build
+confluent
+coverage
+dist
+node_modules
+terraform
+
+# filetypes to ignore
+*.md
+*.yml
