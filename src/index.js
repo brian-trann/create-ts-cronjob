@@ -13,7 +13,8 @@ const _folder = {
   prettier    : path.resolve(__dirname, "prettier"),
   readme      : path.resolve(__dirname, "readme"),
   packagejson : path.resolve(__dirname, "packagejson"),
-  vscode      : path.resolve(__dirname, "vscode")
+  vscode      : path.resolve(__dirname, "vscode"),
+  src         : path.resolve(__dirname, "src"),
 }
 
 const _terraformFilenames = {
@@ -61,23 +62,28 @@ const _terraformFilenames = {
 
   await mkdir(`${projectPath}/src`);
 
+  // src/index.ts
+  const _indexData = await _read(path.join(_folder.src, "index.ts"));
+  const index = path.join(projectPath, "src/index.ts");
+  await writeFile(index, _indexData).catch(handleExit);
+
   // tsconfig
-  const _tsconfigData = await _read(tsConfigFiles[technology])
+  const _tsconfigData = await _read(tsConfigFiles[technology]);
   const tsconfig = path.join(projectPath, "tsconfig.json");
   await writeFile(tsconfig, _tsconfigData).catch(handleExit);
 
   // gitignore
-  const _gitignoreData = await _read(path.join(_folder.gitignore, "gitignore.txt"))
+  const _gitignoreData = await _read(path.join(_folder.gitignore, "gitignore.txt"));
   const gitignore = path.join(projectPath, ".gitignore");
   await writeFile(gitignore, _gitignoreData).catch(handleExit);
 
   // prettierignore
-  const _prettierIgnore = await _read(path.join(_folder.prettier, "prettierignore"))
+  const _prettierIgnore = await _read(path.join(_folder.prettier, "prettierignore"));
   const prettierIgnore = path.join(projectPath, ".prettierignore");
   await writeFile(prettierIgnore, _prettierIgnore).catch(handleExit);
 
   // prettierrc
-  const _prettierRcData = await _read(path.join(_folder.prettier, "prettierrc.json"))
+  const _prettierRcData = await _read(path.join(_folder.prettier, "prettierrc.json"));
   const prettierRc = path.join(projectPath, ".prettierrc.json");
   await writeFile(prettierRc, _prettierRcData).catch(handleExit);
 
@@ -117,7 +123,7 @@ const _terraformFilenames = {
 
   console.log("\nSuccess! - Files created!\n");
   console.log(`cd ${projectName}\n`);
-
+  console.log(`npm`);
 })();
 
 /**
