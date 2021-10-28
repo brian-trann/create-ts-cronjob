@@ -28,3 +28,6 @@ Below are the dependencies in the `package.json` for the scaffolded project.
 * [prettier: ^2.4.1](https://www.npmjs.com/package/prettier)
 * [typescript: ^4.4.4](https://www.npmjs.com/package/typescript)
 
+## To Do
+- [ ] validate project name
+  - Reference [npm](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#name)

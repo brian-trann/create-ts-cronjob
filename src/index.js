@@ -2,7 +2,7 @@
 // @ts-check
 const inquirer = require("inquirer");
 const path = require("path");
-const { writeFile, readdir, readFile, mkdir } = require("fs").promises;
+const { writeFile, readdir, readFile, mkdir, access } = require("fs").promises;
 
 const tsConfigFiles = {};
 
@@ -56,6 +56,7 @@ const _terraformFilenames = {
 
   const projectName = lowerProjectName.toLowerCase();
 
+  await _testAccess(`${projectName}`)
   await mkdir(`./${projectName}`).catch(handleExit);
 
   const projectPath = path.join(process.cwd(), projectName);
@@ -121,9 +122,9 @@ const _terraformFilenames = {
     });
   }
 
-  console.log("\nSuccess! - Files created!\n");
-  console.log(`cd ${projectName}\n`);
-  console.log(`npm`);
+  console.log("\x1b[32m%s\x1b[0m", "\nSuccess! - Files created!\n");
+  console.log("\x1b[36m%s\x1b[0m", `cd ${projectName}\n`);
+  console.log("\x1b[36m%s\x1b[0m", "npm install\n");
 })();
 
 /**
@@ -131,7 +132,7 @@ const _terraformFilenames = {
  * @param {Error|string} error
  */
 function handleExit(error = "Error. Exiting.") {
-  console.log(error);
+  console.log(error , "\n");
   process.exit(1);
 }
 
@@ -161,5 +162,19 @@ async function _read(path) {
     return buff;
   } else {
     handleExit(`Error. Could not read ${path}`);
+  }
+}
+/**
+ * 
+ * @param {string} directoryName
+ * @returns {Promise<void>}
+ */
+async function _testAccess(directoryName){
+  try {
+    await access(path.join(process.cwd(), directoryName))
+    console.log('\x1b[31m%s\x1b[0m', `\n./${directoryName} directory already exists\n`);
+    handleExit()
+  } catch (error) {
+    return
   }
 }

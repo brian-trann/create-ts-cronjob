@@ -30,3 +30,6 @@ jspm_packages/
 
 # vscode workspace
 .vscode
+
+# other
+.DS_Store

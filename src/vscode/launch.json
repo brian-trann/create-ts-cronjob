@@ -13,8 +13,11 @@
         "<node_internals>/**"
       ],
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "program": "${file}",
-      "args": []
+      "runtimeArgs": ["--inspect", "--enable-source-maps", "./dist/index.js"],
+      "outFiles": [
+        "${workspaceFolder}/**/*.js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }
