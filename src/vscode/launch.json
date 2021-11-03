@@ -2,6 +2,7 @@
   // Use IntelliSense to learn about possible attributes.
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  // VS Code Debugging Docs: https://code.visualstudio.com/docs/editor/debugging
   "version": "0.2.0",
   "configurations": [
     {
@@ -11,8 +12,12 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${file}",
-      "args": []
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "runtimeArgs": ["--inspect", "--enable-source-maps", "./dist/index.js"],
+      "outFiles": [
+        "${workspaceFolder}/**/*.js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

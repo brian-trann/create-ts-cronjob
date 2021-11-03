@@ -2,7 +2,7 @@
 // @ts-check
 const inquirer = require("inquirer");
 const path = require("path");
-const { writeFile, readdir, readFile, mkdir } = require("fs").promises;
+const { writeFile, readdir, readFile, mkdir, access } = require("fs").promises;
 
 const tsConfigFiles = {};
 
@@ -13,7 +13,8 @@ const _folder = {
   prettier    : path.resolve(__dirname, "prettier"),
   readme      : path.resolve(__dirname, "readme"),
   packagejson : path.resolve(__dirname, "packagejson"),
-  vscode      : path.resolve(__dirname, "vscode")
+  vscode      : path.resolve(__dirname, "vscode"),
+  src         : path.resolve(__dirname, "src"),
 }
 
 const _terraformFilenames = {
@@ -55,29 +56,35 @@ const _terraformFilenames = {
 
   const projectName = lowerProjectName.toLowerCase();
 
+  await _testAccess(`${projectName}`)
   await mkdir(`./${projectName}`).catch(handleExit);
 
   const projectPath = path.join(process.cwd(), projectName);
 
   await mkdir(`${projectPath}/src`);
 
+  // src/index.ts
+  const _indexData = await _read(path.join(_folder.src, "index.ts"));
+  const index = path.join(projectPath, "src/index.ts");
+  await writeFile(index, _indexData).catch(handleExit);
+
   // tsconfig
-  const _tsconfigData = await _read(tsConfigFiles[technology])
+  const _tsconfigData = await _read(tsConfigFiles[technology]);
   const tsconfig = path.join(projectPath, "tsconfig.json");
   await writeFile(tsconfig, _tsconfigData).catch(handleExit);
 
   // gitignore
-  const _gitignoreData = await _read(path.join(_folder.gitignore, "gitignore.txt"))
+  const _gitignoreData = await _read(path.join(_folder.gitignore, "gitignore.txt"));
   const gitignore = path.join(projectPath, ".gitignore");
   await writeFile(gitignore, _gitignoreData).catch(handleExit);
 
   // prettierignore
-  const _prettierIgnore = await _read(path.join(_folder.prettier, "prettierignore"))
+  const _prettierIgnore = await _read(path.join(_folder.prettier, "prettierignore"));
   const prettierIgnore = path.join(projectPath, ".prettierignore");
   await writeFile(prettierIgnore, _prettierIgnore).catch(handleExit);
 
   // prettierrc
-  const _prettierRcData = await _read(path.join(_folder.prettier, "prettierrc.json"))
+  const _prettierRcData = await _read(path.join(_folder.prettier, "prettierrc.json"));
   const prettierRc = path.join(projectPath, ".prettierrc.json");
   await writeFile(prettierRc, _prettierRcData).catch(handleExit);
 
@@ -115,9 +122,9 @@ const _terraformFilenames = {
     });
   }
 
-  console.log("\nSuccess! - Files created!\n");
-  console.log(`cd ${projectName}\n`);
-
+  console.log("\x1b[32m%s\x1b[0m", "\nSuccess! - Files created!\n");
+  console.log("\x1b[36m%s\x1b[0m", `cd ${projectName}\n`);
+  console.log("\x1b[36m%s\x1b[0m", "npm install\n");
 })();
 
 /**
@@ -125,7 +132,7 @@ const _terraformFilenames = {
  * @param {Error|string} error
  */
 function handleExit(error = "Error. Exiting.") {
-  console.log(error);
+  console.log(error , "\n");
   process.exit(1);
 }
 
@@ -155,5 +162,19 @@ async function _read(path) {
     return buff;
   } else {
     handleExit(`Error. Could not read ${path}`);
+  }
+}
+/**
+ * 
+ * @param {string} directoryName
+ * @returns {Promise<void>}
+ */
+async function _testAccess(directoryName){
+  try {
+    await access(path.join(process.cwd(), directoryName))
+    console.log('\x1b[31m%s\x1b[0m', `\n./${directoryName} directory already exists\n`);
+    handleExit()
+  } catch (error) {
+    return
   }
 }
